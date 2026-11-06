@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "com.andrey.perfcore.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MobAiThrottleMixin",
+    "TntExplosionThrottleMixin",
+    "MinecraftServerSpawnMixin",
+    "EntityTickThrottleMixin$Item",
+    "EntityTickThrottleMixin$Orb",
+    "LightEngineCacheMixin",
+    "PathfindingCacheMixin"
+  ],
+  "client": [
+    "ParticleEngineMixin",
+    "DynamicGpuDataStorageMappedMixin",
+    "DynamicGpuDataStorageNonMappedMixin",
+    "SoundEngineMixin",
+    "SmartChunkCullingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
