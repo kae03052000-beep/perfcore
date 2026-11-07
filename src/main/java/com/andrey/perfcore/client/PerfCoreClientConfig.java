@@ -2,13 +2,11 @@ package com.andrey.perfcore.client;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-/**
- * Клиентские настройки PerfCore (FPS, частицы, отрисовка сущностей).
- */
 public final class PerfCoreClientConfig {
     public static final ForgeConfigSpec SPEC;
 
     private static final ForgeConfigSpec.BooleanValue ENABLED;
+    private static final ForgeConfigSpec.BooleanValue DEBUG_LOG;
     private static final ForgeConfigSpec.BooleanValue DYNAMIC_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue TARGET_FPS;
     private static final ForgeConfigSpec.IntValue MIN_RENDER_DISTANCE;
@@ -22,9 +20,9 @@ public final class PerfCoreClientConfig {
     private static final ForgeConfigSpec.IntValue GPU_BUFFER_INITIAL_CAPACITY;
     private static final ForgeConfigSpec.BooleanValue SOUND_THROTTLING;
     private static final ForgeConfigSpec.IntValue MAX_SOUNDS_PER_TICK;
-    private static final ForgeConfigSpec.BooleanValue DEBUG_LOG;
 
     public static volatile boolean enabled = true;
+    public static volatile boolean debugLog = false;
     public static volatile boolean dynamicRenderDistance = true;
     public static volatile int targetFps = 60;
     public static volatile int minRenderDistance = 6;
@@ -38,7 +36,6 @@ public final class PerfCoreClientConfig {
     public static volatile int gpuBufferInitialCapacity = 4096;
     public static volatile boolean soundThrottling = true;
     public static volatile int maxSoundsPerTick = 8;
-    public static volatile boolean debugLog = false;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -49,21 +46,24 @@ public final class PerfCoreClientConfig {
         ).push("general");
         ENABLED = builder.comment("Включить клиентские оптимизации PerfCore.")
                 .define("enabled", true);
-        DEBUG_LOG = builder.comment("Писать в лог изменения рендер-дистанции и другую диагностику.")
+        DEBUG_LOG = builder.comment("Писать в лог изменения дальности прорисовки и счётчики отброшенных частиц и звуков.")
                 .define("debugLog", false);
         builder.pop();
 
         builder.comment("Ограничение звуков (защита от одновременных взрывов).").push("sounds");
-        SOUND_THROTTLING = builder.comment("Ограничивать количество одновременно запускаемых звуков.")
+        SOUND_THROTTLING = builder.comment(
+                        "Ограничивать количество одновременно запускаемых звуков окружения.",
+                        "Музыка и звуки интерфейса не ограничиваются."
+                )
                 .define("soundThrottling", true);
-        MAX_SOUNDS_PER_TICK = builder.comment("Максимум новых звуков за один клиентский тик.")
+        MAX_SOUNDS_PER_TICK = builder.comment("Максимум новых звуков окружения за один клиентский тик.")
                 .defineInRange("maxSoundsPerTick", 8, 1, 32);
         builder.pop();
 
         builder.comment("Автоматическая подстройка дальности прорисовки под FPS.").push("dynamicRenderDistance");
         DYNAMIC_RENDER_DISTANCE = builder.comment(
                         "Если FPS стабильно ниже цели — дальность прорисовки уменьшается,",
-                        "если выше — постепенно возвращается обратно."
+                        "если выше — постепенно возвращается к значению, выбранному игроком."
                 )
                 .define("enabled", true);
         TARGET_FPS = builder.comment("Желаемый FPS.")
@@ -104,11 +104,11 @@ public final class PerfCoreClientConfig {
 
         builder.comment(
                 "Предварительный размер GPU-буферов.",
-                "В Minecraft 26.3 буферы секций чанков начинаются с capacity=2 и",
-                "пересоздаются почти каждый кадр, засоряя лог. PerfCore сразу выделяет",
+                "В Minecraft 26.3 динамические буферы начинаются с очень малой ёмкости и",
+                "многократно пересоздаются, засоряя лог. PerfCore сразу выделяет",
                 "достаточный буфер."
         ).push("gpuBuffers");
-        PRE_SIZE_GPU_BUFFERS = builder.comment("Выделять GPU-буферы с запасом при старте.")
+        PRE_SIZE_GPU_BUFFERS = builder.comment("Выделять GPU-буферы с запасом при создании.")
                 .define("preSize", true);
         GPU_BUFFER_INITIAL_CAPACITY = builder.comment(
                         "Начальная ёмкость динамических GPU-буферов (степень двойки подбирается автоматически)."
@@ -122,13 +122,6 @@ public final class PerfCoreClientConfig {
     private PerfCoreClientConfig() {
     }
 
-    /**
-     * Начальная ёмкость динамического GPU-буфера.
-     *
-     * <p>Ваниль передаёт сюда {@code 1} или {@code 2}, из-за чего буфер
-     * пересоздаётся почти каждый кадр. Метод вызывается из миксина в
-     * конструкторе хранилища, поэтому не должен бросать исключений.</p>
-     */
     public static int effectiveGpuBufferCapacity(int vanillaCapacity) {
         if (!enabled || !preSizeGpuBuffers) {
             return vanillaCapacity;
@@ -141,6 +134,7 @@ public final class PerfCoreClientConfig {
     public static void bake() {
         try {
             enabled = ENABLED.get();
+            debugLog = DEBUG_LOG.get();
             dynamicRenderDistance = DYNAMIC_RENDER_DISTANCE.get();
             targetFps = TARGET_FPS.get();
             minRenderDistance = MIN_RENDER_DISTANCE.get();
@@ -154,9 +148,8 @@ public final class PerfCoreClientConfig {
             gpuBufferInitialCapacity = GPU_BUFFER_INITIAL_CAPACITY.get();
             soundThrottling = SOUND_THROTTLING.get();
             maxSoundsPerTick = MAX_SOUNDS_PER_TICK.get();
-            debugLog = DEBUG_LOG.get();
         } catch (IllegalStateException notLoadedYet) {
-            // Конфиг ещё не прочитан — используем значения по умолчанию.
+            return;
         }
     }
 }

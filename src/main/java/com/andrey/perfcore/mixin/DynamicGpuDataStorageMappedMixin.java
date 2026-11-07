@@ -6,13 +6,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-/**
- * Увеличивает начальную ёмкость mapped GPU-буферов.
- *
- * <p>В Minecraft 26.3 такие буферы создаются с ёмкостью 1–2 блока и затем
- * многократно пересоздаются в течение одного кадра. Это вызывает
- * переаллокации памяти и спам {@code Resizing ...} в логе.</p>
- */
 @Mixin(DynamicGpuDataStorageMapped.class)
 public abstract class DynamicGpuDataStorageMappedMixin {
     @ModifyArg(

@@ -1,29 +1,28 @@
 modLoader="javafml"
 loaderVersion="[66,)"
-license="MIT"
+license="CC BY-NC-SA 4.0"
 
 [[mods]]
 modId="perfcore"
-version="1.1.0"
+version="1.3.0"
 displayName="PerfCore"
-authors="Andrey"
+authors="Puging_Pug"
 description='''
-Небольшой мод производительности для Minecraft 26.3 / Forge 66.
+Lightweight optimization mod for Minecraft 26.3 / Forge 66.
 
-• реже тикает ИИ мобов, рядом с которыми нет игроков;
-• ограничивает количество и дальность частиц;
-• отсекает отрисовку далёких живых сущностей;
-• адаптирует дальность прорисовки под FPS и восстанавливает настройку
-  игрока после выхода из мира;
-• заранее выделяет динамические GPU-буферы, убирая их постоянное
-  пересоздание и спам «Resizing ...» в логе;
-• размазывает массовые взрывы динамита по тикам, убирая фризы от цепных
-  реакций;
-• ускоряет создание нового мира за счёт меньшей области поиска спавна.
+Features:
+- Throttles AI of mobs far from players;
+- Freezes idle items and XP orbs far from players without breaking despawn timers;
+- Limits particles and ambient sounds;
+- Culls distant living entities;
+- Adapts render distance to FPS and restores player settings;
+- Pre-allocates dynamic GPU buffers to avoid "Resizing..." log spam;
+- Spreads TNT explosions across ticks to remove chain-reaction freezes;
+- Speeds up world creation by reducing the spawn search area.
 
-Новое в 1.1.0: оптимизация взрывов динамита и ускоренное создание мира.
+1.3.0: fixed item/XP freezing, sounds and render distance bugs; removed unsafe light cache, path cache and chunk culling.
 
-Все настройки находятся в config/perfcore-*.toml и меняются без перезапуска.
+All settings are in config/perfcore-*.toml and can be changed without restart.
 '''
 
 [[dependencies.perfcore]]

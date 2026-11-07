@@ -17,7 +17,9 @@ public abstract class TntExplosionThrottleMixin {
             return;
         }
         if (tnt.getFuse() <= 1 && !PerfCoreServer.tryReserveTntExplosion()) {
-            tnt.setFuse(2);
+            if (tnt.getFuse() < 1) {
+                tnt.setFuse(1);
+            }
             ci.cancel();
         }
     }

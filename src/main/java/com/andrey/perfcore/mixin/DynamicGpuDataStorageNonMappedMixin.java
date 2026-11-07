@@ -6,10 +6,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-/**
- * Увеличивает начальную ёмкость non-mapped GPU-буферов (включая
- * {@code Chunk Sections Instanced}).
- */
 @Mixin(DynamicGpuDataStorageNonMapped.class)
 public abstract class DynamicGpuDataStorageNonMappedMixin {
     @ModifyArg(

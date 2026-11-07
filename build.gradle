@@ -1,4 +1,3 @@
-// PerfCore — клиентский и серверный мод производительности для Minecraft 26.3 / Forge 66.
 plugins {
     id 'java'
     id 'idea'
@@ -6,10 +5,9 @@ plugins {
     id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
-version = '1.2.0'
+version = '1.3.0'
 group = 'com.andrey.perfcore'
 
-// Minecraft 26.1+ требует Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
@@ -24,8 +22,6 @@ minecraft {
         }
 
         register('client') {
-            // В dev-запуске мод грузится из каталога классов, у которого нет
-            // манифеста, поэтому конфиг Mixin указываем явно.
             args '--mixin.config', 'perfcore.mixins.json'
         }
 
@@ -62,7 +58,6 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-Xlint:deprecation']
 }
 
-// В Forge 26.3 конфиги Mixin подхватываются из манифеста jar.
 jar {
     manifest {
         attributes(

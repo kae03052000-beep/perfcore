@@ -8,7 +8,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
@@ -16,19 +15,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
-/**
- * PerfCore — небольшой мод производительности для Forge 26.3.
- *
- * <p>Что делает:</p>
- * <ul>
- *   <li>реже тикает ИИ мобов, рядом с которыми нет игроков;</li>
- *   <li>ограничивает количество и дальность частиц на клиенте;</li>
- *   <li>отсекает отрисовку далёких живых сущностей;</li>
- *   <li>адаптирует дальность прорисовки под FPS;</li>
- *   <li>заранее выделяет динамические GPU-буферы Minecraft 26.3, чтобы
- *       игра не пересоздавала их каждый кадр и не спамила в лог.</li>
- * </ul>
- */
 @Mod(PerfCore.MOD_ID)
 public final class PerfCore {
     public static final String MOD_ID = "perfcore";
@@ -54,7 +40,7 @@ public final class PerfCore {
             PerfCoreClient.init();
         }
 
-        LOGGER.info("PerfCore загружен (Minecraft 26.3, Forge 66)");
+        LOGGER.info("PerfCore 1.3.0 загружен (Minecraft 26.3, Forge 66)");
     }
 
     private static void onConfigLoading(ModConfigEvent.Loading event) {

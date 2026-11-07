@@ -25,27 +25,33 @@ Full legal text: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 ---
 
-## What's new in 1.2
+## What's new in 1.3
 
-### 1. Light Engine Cache
-- Problem: When blocks change (explosions, /fill), the game recalculates light in a 15-block radius thousands of times, often for the same position.
-- Solution: Deduplication of checkBlock calls within a single game tick. If the block hasn't changed since the last call, light is not recalculated. The cache lives for one tick, then clears.
-- Effect: Fewer TPS drops during explosions and mass block updates.
+This release is a bug-fix and cleanup release.
 
-### 2. Pathfinding Cache
-- Problem: When a mob chases a player, recomputePath() is called every tick, even if the target moved half a block.
-- Solution: Throttling recomputePath to once every 2 ticks. The mob doesn't teleport, it already has a valid path, it just recalculates a bit later.
-- Effect: ~50% fewer pathfinding calls. Noticeable on mob farms.
+### Fixed
+- Entity Freeze (Items/XP): only resting entities are skipped now. Items and XP orbs no longer hang in the air, the time skipped is added to their despawn timer (before, despawn was up to 20 times slower), and XP orbs can merge again.
+- Sound Throttling: music and interface sounds are never cut off. The counter moved out of the mixin class into the mod code, because mixin classes must not be referenced directly.
+- TNT: deferred TNT waits on the last fuse tick and retries every tick, so up to `maxExplosionsPerTick` explosions happen each tick instead of one batch every two ticks.
+- Dynamic render distance: manual changes of the render distance are tracked at all times, so the mod always restores the value you chose.
+- Fast World Creation: the patch only applies when vanilla passes its 11x11 search size, and it is skipped safely if the target code is missing in a game version.
+- Mixin config is no longer mandatory: if a patch stops matching after a game update, it is skipped with a warning in the log instead of crashing the game.
+- Version numbers in `build.gradle`, `mods.toml` and the jar are unified.
 
-### 3. Smart Chunk Culling (v1)
-- What it does: Skips rebuilding sections that are guaranteed empty (air only, no block entities). Saves CPU at high altitudes and in oceans.
-- What it doesn't do (planned for 1.3): Full occlusion culling for chunks hidden behind walls. Requires analysis of SectionOcclusionGraph and shader testing.
+### Removed
+- Light Engine Cache: it ran on the lighting thread and read blocks through the main-thread level, which can block the game.
+- Pathfinding Cache: an integer overflow made it cancel every `recomputePath()` call, so mobs never recomputed their paths after block changes.
+- Smart Chunk Culling: cancelling a rebuild when a section became empty left the old geometry on screen.
 
 ---
 
+## What was in 1.2
+
+- Light Engine Cache, Pathfinding Cache and Smart Chunk Culling (v1). All three were removed in 1.3, see above.
+
 ## What was in 1.1.1
 
-- Entity Freeze (Items/XP): If no players are within 100 blocks, physics ticks once per second instead of 20 times.
+- Entity Freeze (Items/XP): If no players are within 100 blocks, items and XP orbs are not ticked every tick.
 - Sound Throttling: During explosions, excess sounds are cut off (default 8 per tick).
 
 ## What was in 1.1
@@ -69,17 +75,17 @@ During a stress test with 2014 TNT blocks:
 ## Configuration
 
 All settings can be changed in-game or via files:
-- config/perfcore-common.toml — TNT, mob AI, world gen, light cache, pathfinding.
+- config/perfcore-common.toml — mob AI, TNT, resting items and XP, world creation.
 - config/perfcore-client.toml — particles, rendering, sounds, GPU buffers.
 
-Every optimization can be disabled individually. Enable logStats = true for debug output.
+Every optimization can be disabled individually. Enable logStats = true (common) or debugLog = true (client) for debug output.
 
 ---
 
 ## Installation
-1. Install Minecraft Forge 26.3 (version 66.x).
-2. Download perfcore-1.2.0.jar.
+1. Install Minecraft Forge 26.3 (version 66.x) with Java 25.
+2. Download perfcore-1.3.0.jar.
 3. Place the file in .minecraft/mods.
 4. Launch the game.
 
-Compatibility: The mod uses Mixin injections with require = 0 for risky patches, making it compatible with most other mods. However, if you use other optimizers (FerriteCore, Embeddium), conflicts are possible. Test in combination.
+Compatibility: The Mixin config is not required, so a patch that no longer matches the game is skipped and reported in the log instead of crashing the game. If you use other optimizers (FerriteCore, Embeddium), conflicts are possible. Test in combination.
