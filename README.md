@@ -1,82 +1,85 @@
 # PerfCore
-Оптимизация без компромиссов для Minecraft 26.3 (Forge)
+Optimization without compromises for Minecraft 26.3 (Forge)
 
-PerfCore — это легковесный мод, созданный для решения самых раздражающих проблем производительности в современном Minecraft. Вместо того чтобы переписывать движок, мод точечно латает горячие места, которые вызывают фризы и просадки FPS, не ломая при этом ванильный геймплей.
+PerfCore is a lightweight mod designed to solve the most annoying performance issues in modern Minecraft. Instead of rewriting the engine, the mod surgically patches the hot paths that cause freezes and FPS drops, without breaking vanilla gameplay.
 
 ---
 
-## Лицензия: CC BY-NC-SA 4.0
+## License
+
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
 Copyright (c) 2026 Puging_Pug.
 
-Данный мод распространяется на условиях лицензии
-Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
-(CC BY-NC-SA 4.0).
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
-Кратко:
-- Вы МОЖЕТЕ использовать мод, модифицировать его и распространять.
-- Вы ОБЯЗАНЫ указывать автора (Puging_Pug) и ссылку на лицензию.
-- Вы НЕ МОЖЕТЕ использовать мод в коммерческих целях.
-- Производные продукты должны распространяться под той же лицензией CC BY-NC-SA 4.0.
+You are free to:
+- Share: Copy and redistribute the material in any medium or format.
+- Adapt: Remix, transform, and build upon the material.
 
-Полный текст лицензии: https://creativecommons.org/licenses/by-nc-sa/4.0/
+Under the following terms:
+- Attribution: You must give appropriate credit to Puging_Pug, provide a link to the license, and indicate if changes were made.
+- NonCommercial: You may not use the material for commercial purposes.
+- ShareAlike: If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 
----
-
-## Что нового в 1.2
-
-### 1. Кэш освещения (Light Engine Cache)
-- Проблема: при взрывах и /fill игра пересчитывает свет в радиусе 15 блоков тысячи раз. Часто для одной и той же позиции с тем же состоянием.
-- Решение: дедупликация вызовов checkBlock в пределах одного игрового тика. Если блок не менялся с прошлого вызова — свет не пересчитывается. Кэш живёт один тик, потом чистится.
-- Эффект: меньше просадок TPS при взрывах и массовом изменении блоков.
-
-### 2. Кэш путей мобов (Pathfinding Cache)
-- Проблема: когда моб преследует игрока, recomputePath() вызывается каждый тик, даже если цель сдвинулась на полблока. Каждый вызов — BFS по сетке блоков.
-- Решение: троттлинг recomputePath до 1 раза в 2 тика. Моб не телепортируется, у него уже есть валидный путь, он просто чуть позже пересчитает маршрут.
-- Эффект: ~50% меньше вызовов pathfinding. Заметно на фермах с большим количеством мобов.
-
-### 3. Умное отсечение чанков (Smart Chunk Culling) — v1
-- Что делает: пропускает перестройку секций, которые гарантированно пустые (только воздух, без block entities). На больших высотах и в океанах это экономит CPU.
-- Что НЕ делает (запланировано на 1.3): полноценное скрытие чанков за стенами. Требует анализа SectionOcclusionGraph и тестов с шейдерами.
+Full legal text: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 ---
 
-## Что было в 1.1.1
+## What's new in 1.2
 
-- Заморозка предметов и сфер опыта: если в радиусе 100 блоков нет игроков, физика тикает раз в секунду вместо 20 раз.
-- Ограничение звуков: при взрывах лишние звуки обрезаются (по умолчанию 8 за тик).
+### 1. Light Engine Cache
+- Problem: When blocks change (explosions, /fill), the game recalculates light in a 15-block radius thousands of times, often for the same position.
+- Solution: Deduplication of checkBlock calls within a single game tick. If the block hasn't changed since the last call, light is not recalculated. The cache lives for one tick, then clears.
+- Effect: Fewer TPS drops during explosions and mass block updates.
 
-## Что было в 1.1
+### 2. Pathfinding Cache
+- Problem: When a mob chases a player, recomputePath() is called every tick, even if the target moved half a block.
+- Solution: Throttling recomputePath to once every 2 ticks. The mob doesn't teleport, it already has a valid path, it just recalculates a bit later.
+- Effect: ~50% fewer pathfinding calls. Noticeable on mob farms.
 
-- Починка взрывов TNT: динамит взрывается порциями, а не весь сразу.
-- Умная оптимизация ИИ мобов: далёкие мобы пропускают часть тиков ИИ.
-- Ускорение создания мира: радиус поиска спавна уменьшен до 7x7 чанков.
-- Клиентские оптимизации: отсечение частиц, отсечение сущностей, динамическая дальность, фикс GPU-буферов.
-
----
-
-## Доказательство эффективности (тест 1.1)
-
-Во время стресс-теста с подрывом 2014 блоков TNT:
-- Сервер не испытал ни одного фриза.
-- Мод отложил 1514 взрывов на следующие тики, сохранив стабильный TPS.
-- Нагрузка на ИИ мобов была снижена на 50% (пропущено 55 984 тика ИИ далёких мобов).
+### 3. Smart Chunk Culling (v1)
+- What it does: Skips rebuilding sections that are guaranteed empty (air only, no block entities). Saves CPU at high altitudes and in oceans.
+- What it doesn't do (planned for 1.3): Full occlusion culling for chunks hidden behind walls. Requires analysis of SectionOcclusionGraph and shader testing.
 
 ---
 
-## Конфигурация
+## What was in 1.1.1
 
-Все настройки можно менять прямо в игре или через файлы:
-- config/perfcore-common.toml — настройки TNT, ИИ мобов, генерации, кэша света, путей мобов.
-- config/perfcore-client.toml — настройки частиц, рендера, звуков, GPU-буферов.
+- Entity Freeze (Items/XP): If no players are within 100 blocks, physics ticks once per second instead of 20 times.
+- Sound Throttling: During explosions, excess sounds are cut off (default 8 per tick).
 
-Каждую оптимизацию можно отключить отдельно. Для вывода статистики в лог включите logStats = true.
+## What was in 1.1
+
+- TNT Explosion Fix: TNT explodes in batches instead of all at once.
+- Smart Mob AI Optimization: Distant mobs skip some AI ticks.
+- Fast World Creation: Spawn search radius reduced to 7x7 chunks.
+- Client Optimizations: Particle culling, entity culling, dynamic render distance, GPU buffer fix.
 
 ---
 
-## Установка
-1. Установите Minecraft Forge 26.3 (версия 66.x).
-2. Скачайте perfcore-1.2.0.jar.
-3. Поместите файл в папку .minecraft/mods.
-4. Запустите игру.
+## Proof of Efficiency (1.1 test)
 
-Совместимость: Мод использует Mixin-инъекции с require = 0 для рискованных мест, поэтому в теории совместим с большинством других модов. Однако, если вы используете другие оптимизаторы (FerriteCore, Embeddium), возможны конфликты. Тестируйте в связке.
+During a stress test with 2014 TNT blocks:
+- The server experienced zero freezes.
+- The mod deferred 1514 explosions to subsequent ticks, maintaining stable TPS.
+- Mob AI load was reduced by 50% (55,984 ticks of AI skipped for distant mobs).
+
+---
+
+## Configuration
+
+All settings can be changed in-game or via files:
+- config/perfcore-common.toml — TNT, mob AI, world gen, light cache, pathfinding.
+- config/perfcore-client.toml — particles, rendering, sounds, GPU buffers.
+
+Every optimization can be disabled individually. Enable logStats = true for debug output.
+
+---
+
+## Installation
+1. Install Minecraft Forge 26.3 (version 66.x).
+2. Download perfcore-1.2.0.jar.
+3. Place the file in .minecraft/mods.
+4. Launch the game.
+
+Compatibility: The mod uses Mixin injections with require = 0 for risky patches, making it compatible with most other mods. However, if you use other optimizers (FerriteCore, Embeddium), conflicts are possible. Test in combination.
